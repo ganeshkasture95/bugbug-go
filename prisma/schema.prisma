@@ -1,0 +1,186 @@
+// schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User entity
+model User {
+  id              String    @id @default(uuid())
+  name            String
+  email           String    @unique
+  password        String
+  role            Role
+  twoFactorEnabled Boolean  @default(false)
+  twoFactorSecret String?   // 2FA secret key
+  emailVerified   Boolean   @default(false)
+  emailVerificationToken String?
+  passwordResetToken String?
+  passwordResetExpires DateTime?
+  lastLoginAt     DateTime?
+  loginAttempts   Int       @default(0)
+  lockedUntil     DateTime?
+  xp              Int       @default(0)
+  badges          Badge[]   // relation
+  reports         Report[]  // researcher submissions
+  programs        Program[] // company programs
+  rewards         Reward[]  // payouts
+  notifications   Notification[] // user notifications
+  sessions        Session[] // user sessions
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+enum Role {
+  Researcher
+  Company
+  Admin
+}
+
+// Program entity
+model Program {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  scope       String[]
+  rewards     Json     // {low, medium, high, critical}
+  status      ProgramStatus @default(Active)
+  company     User     @relation(fields: [companyId], references: [id])
+  companyId   String
+  reports     Report[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum ProgramStatus {
+  Active
+  Paused
+  Closed
+}
+
+// Report entity
+model Report {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  severity    Severity
+  status      ReportStatus @default(Submitted)
+  researcher  User     @relation(fields: [researcherId], references: [id])
+  researcherId String
+  program     Program  @relation(fields: [programId], references: [id])
+  programId   String
+  aiAnalysis  AIAnalysis?
+  reward      Reward?
+  disclosure  Disclosure?
+  attachments String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum Severity {
+  Low
+  Medium
+  High
+  Critical
+}
+
+enum ReportStatus {
+  Submitted
+  InReview
+  Validated
+  Rejected
+  Fixed
+  Disclosed
+}
+
+// AI Analysis
+model AIAnalysis {
+  id               String   @id @default(uuid())
+  predictedSeverity Severity
+  affectedFiles     String[]
+  confidenceScore   Float
+  report            Report  @relation(fields: [reportId], references: [id])
+  reportId          String  @unique
+  createdAt         DateTime @default(now())
+}
+
+// Reward
+model Reward {
+  id          String   @id @default(uuid())
+  amount      Float
+  currency    String   @default("USD")
+  status      RewardStatus @default(Pending)
+  paidAt      DateTime?
+  report      Report   @relation(fields: [reportId], references: [id])
+  reportId    String   @unique
+  researcher  User     @relation(fields: [researcherId], references: [id])
+  researcherId String
+}
+
+enum RewardStatus {
+  Pending
+  Paid
+  Failed
+}
+
+// Badge
+model Badge {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  icon        String
+  users       User[]
+}
+
+// Disclosure
+model Disclosure {
+  id            String   @id @default(uuid())
+  publicSummary String
+  datePublished DateTime
+  report        Report   @relation(fields: [reportId], references: [id])
+  reportId      String   @unique
+}
+
+// Notification
+model Notification {
+  id        String   @id @default(uuid())
+  message   String
+  type      NotificationType
+  read      Boolean  @default(false)
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  createdAt DateTime @default(now())
+}
+
+enum NotificationType {
+  ReportUpdate
+  Reward
+  System
+}
+// Session management for security
+model Session {
+  id          String   @id @default(uuid())
+  userId      String
+  token       String   @unique
+  refreshToken String  @unique
+  userAgent   String?
+  ipAddress   String?
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Audit log for security tracking
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  action    String   // LOGIN, LOGOUT, PASSWORD_CHANGE, 2FA_ENABLE, etc.
+  details   Json?    // Additional details about the action
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+}
