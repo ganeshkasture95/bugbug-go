@@ -6,6 +6,7 @@ import { AuthService } from './lib/auth';
 const protectedRoutes = [
   '/dashboard',
   '/profile',
+  '/programs',
   '/api/reports',
   '/api/programs',
   '/api/user',

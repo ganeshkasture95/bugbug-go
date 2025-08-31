@@ -132,25 +132,42 @@ export default function DashboardPage() {
                                 </div>
 
                                 {user.role === 'Researcher' && (
-                                    <div className="bg-white shadow rounded-lg p-6">
-                                        <h4 className="text-lg font-medium text-gray-900 mb-2">Submit Report</h4>
-                                        <p className="text-sm text-gray-600 mb-4">
-                                            Report a security vulnerability
-                                        </p>
-                                        <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                                            New Report
-                                        </button>
-                                    </div>
+                                    <>
+                                        <div className="bg-white shadow rounded-lg p-6">
+                                            <h4 className="text-lg font-medium text-gray-900 mb-2">Browse Programs</h4>
+                                            <p className="text-sm text-gray-600 mb-4">
+                                                Find active bug bounty programs
+                                            </p>
+                                            <button
+                                                onClick={() => router.push('/programs')}
+                                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+                                            >
+                                                View Programs
+                                            </button>
+                                        </div>
+                                        <div className="bg-white shadow rounded-lg p-6">
+                                            <h4 className="text-lg font-medium text-gray-900 mb-2">Submit Report</h4>
+                                            <p className="text-sm text-gray-600 mb-4">
+                                                Report a security vulnerability
+                                            </p>
+                                            <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                                                New Report
+                                            </button>
+                                        </div>
+                                    </>
                                 )}
 
                                 {user.role === 'Company' && (
                                     <div className="bg-white shadow rounded-lg p-6">
-                                        <h4 className="text-lg font-medium text-gray-900 mb-2">Bug Bounty Program</h4>
+                                        <h4 className="text-lg font-medium text-gray-900 mb-2">Bug Bounty Programs</h4>
                                         <p className="text-sm text-gray-600 mb-4">
-                                            Manage your bug bounty program
+                                            Create and manage your programs
                                         </p>
-                                        <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                                            Manage Program
+                                        <button
+                                            onClick={() => router.push('/programs')}
+                                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+                                        >
+                                            Manage Programs
                                         </button>
                                     </div>
                                 )}
