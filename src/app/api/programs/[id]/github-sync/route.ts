@@ -1,0 +1,196 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import { z } from 'zod';
+
+const syncSchema = z.object({
+  action: z.enum(['sync-issues', 'update-issues']),
+  issues: z.array(z.string()).optional(),
+});
+
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const programId = params.id;
+    const body = await request.json();
+    const validatedData = syncSchema.parse(body);
+
+    // Verify program ownership
+    const program = await prisma.program.findFirst({
+      where: {
+        id: programId,
+        companyId: session.user.id,
+      },
+    });
+
+    if (!program) {
+      return NextResponse.json({ error: 'Program not found' }, { status: 404 });
+    }
+
+    if (validatedData.action === 'update-issues') {
+      // Update the program's GitHub issues
+      const updatedProgram = await prisma.program.update({
+        where: { id: programId },
+        data: {
+          githubIssues: validatedData.issues || [],
+        },
+        include: {
+          company: {
+            select: { name: true, email: true }
+          }
+        }
+      });
+
+      return NextResponse.json({
+        success: true,
+        program: updatedProgram,
+      });
+    }
+
+    if (validatedData.action === 'sync-issues' && program.githubRepo) {
+      // Fetch issues from GitHub API
+      try {
+        const response = await fetch(
+          `https://api.github.com/repos/${program.githubRepo}/issues?state=open&per_page=50`,
+          {
+            headers: {
+              'Accept': 'application/vnd.github.v3+json',
+              'User-Agent': 'BugBounty-Platform',
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`GitHub API error: ${response.status}`);
+        }
+
+        const issues = await response.json();
+        
+        // Filter out pull requests (GitHub API includes PRs in issues endpoint)
+        const actualIssues = issues.filter((issue: any) => !issue.pull_request);
+        
+        // Extract issue URLs
+        const issueUrls = actualIssues.map((issue: any) => issue.html_url);
+
+        return NextResponse.json({
+          success: true,
+          issues: actualIssues,
+          issueUrls,
+          count: actualIssues.length,
+        });
+      } catch (error) {
+        return NextResponse.json(
+          { error: 'Failed to sync with GitHub' },
+          { status: 500 }
+        );
+      }
+    }
+
+    return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+  } catch (error) {
+    console.error('GitHub sync error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const programId = params.id;
+
+    // Get program with GitHub info
+    const program = await prisma.program.findFirst({
+      where: {
+        id: programId,
+        companyId: session.user.id,
+      },
+      select: {
+        id: true,
+        githubRepo: true,
+        githubIssues: true,
+      },
+    });
+
+    if (!program) {
+      return NextResponse.json({ error: 'Program not found' }, { status: 404 });
+    }
+
+    if (!program.githubRepo) {
+      return NextResponse.json({ error: 'No GitHub repository configured' }, { status: 400 });
+    }
+
+    // Fetch repository info and issues
+    try {
+      const [repoResponse, issuesResponse] = await Promise.all([
+        fetch(`https://api.github.com/repos/${program.githubRepo}`, {
+          headers: {
+            'Accept': 'application/vnd.github.v3+json',
+            'User-Agent': 'BugBounty-Platform',
+          },
+        }),
+        fetch(`https://api.github.com/repos/${program.githubRepo}/issues?state=open&per_page=50`, {
+          headers: {
+            'Accept': 'application/vnd.github.v3+json',
+            'User-Agent': 'BugBounty-Platform',
+          },
+        }),
+      ]);
+
+      if (!repoResponse.ok || !issuesResponse.ok) {
+        throw new Error('GitHub API error');
+      }
+
+      const [repoData, issuesData] = await Promise.all([
+        repoResponse.json(),
+        issuesResponse.json(),
+      ]);
+
+      // Filter out pull requests
+      const actualIssues = issuesData.filter((issue: any) => !issue.pull_request);
+
+      return NextResponse.json({
+        success: true,
+        repository: {
+          name: repoData.name,
+          full_name: repoData.full_name,
+          description: repoData.description,
+          language: repoData.language,
+          stargazers_count: repoData.stargazers_count,
+          open_issues_count: repoData.open_issues_count,
+          html_url: repoData.html_url,
+        },
+        issues: actualIssues,
+        linkedIssues: program.githubIssues,
+      });
+    } catch (error) {
+      return NextResponse.json(
+        { error: 'Failed to fetch GitHub data' },
+        { status: 500 }
+      );
+    }
+  } catch (error) {
+    console.error('GitHub sync error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}

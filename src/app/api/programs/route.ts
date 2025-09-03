@@ -13,6 +13,10 @@ const createProgramSchema = z.object({
     high: z.number().min(0),
     critical: z.number().min(0),
   }),
+  githubRepo: z.string().optional(),
+  githubIssues: z.array(z.string()).optional(),
+  maintainerEmail: z.string().email().optional().or(z.literal('')),
+  codeLanguages: z.array(z.string()).optional(),
 });
 
 // GET - Fetch all active programs (for researchers) or company's programs
@@ -31,7 +35,18 @@ export async function GET(request: NextRequest) {
       // Company sees only their programs
       programs = await prisma.program.findMany({
         where: { companyId: userId },
-        include: {
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          scope: true,
+          rewards: true,
+          status: true,
+          githubRepo: true,
+          githubIssues: true,
+          maintainerEmail: true,
+          codeLanguages: true,
+          createdAt: true,
           company: {
             select: { name: true, email: true }
           },
@@ -45,7 +60,18 @@ export async function GET(request: NextRequest) {
       // Researchers see all active programs
       programs = await prisma.program.findMany({
         where: { status: 'Active' },
-        include: {
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          scope: true,
+          rewards: true,
+          status: true,
+          githubRepo: true,
+          githubIssues: true,
+          maintainerEmail: true,
+          codeLanguages: true,
+          createdAt: true,
           company: {
             select: { name: true, email: true }
           },
@@ -87,10 +113,17 @@ export async function POST(request: NextRequest) {
         scope: validatedData.scope,
         rewards: validatedData.rewards,
         companyId: userId,
+        githubRepo: validatedData.githubRepo || null,
+        githubIssues: validatedData.githubIssues || [],
+        maintainerEmail: validatedData.maintainerEmail || null,
+        codeLanguages: validatedData.codeLanguages || [],
       },
       include: {
         company: {
           select: { name: true, email: true }
+        },
+        _count: {
+          select: { reports: true }
         }
       }
     });

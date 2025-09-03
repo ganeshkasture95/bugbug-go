@@ -52,6 +52,11 @@ model Program {
   company     User     @relation(fields: [companyId], references: [id])
   companyId   String
   reports     Report[]
+  // GitHub Integration
+  githubRepo  String?  // GitHub repository URL (e.g., "owner/repo")
+  githubIssues String[] // Array of GitHub issue URLs or numbers
+  maintainerEmail String? // Contact email for maintainers
+  codeLanguages String[] // Programming languages used
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }

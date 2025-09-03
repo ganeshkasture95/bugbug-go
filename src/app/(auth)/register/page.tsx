@@ -59,13 +59,13 @@ export default function RegisterPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8" style={{ backgroundColor: 'var(--background)' }}>
             <div className="max-w-md w-full space-y-8">
                 <div>
-                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                    <h2 className="mt-6 text-center text-3xl font-extrabold" style={{ color: 'var(--foreground)' }}>
                         Create your account
                     </h2>
-                    <p className="mt-2 text-center text-sm text-gray-600">
+                    <p className="mt-2 text-center text-sm" style={{ color: 'var(--muted-foreground)' }}>
                         Join the secure bug bounty platform
                     </p>
                 </div>
@@ -79,7 +79,7 @@ export default function RegisterPage() {
 
                     <div className="space-y-4">
                         <div>
-                            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                            <label htmlFor="name" className="form-label">
                                 Full Name
                             </label>
                             <input
@@ -87,7 +87,7 @@ export default function RegisterPage() {
                                 name="name"
                                 type="text"
                                 required
-                                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                className="form-input"
                                 placeholder="Enter your full name"
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -95,7 +95,7 @@ export default function RegisterPage() {
                         </div>
 
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                            <label htmlFor="email" className="form-label">
                                 Email address
                             </label>
                             <input
@@ -103,7 +103,7 @@ export default function RegisterPage() {
                                 name="email"
                                 type="email"
                                 required
-                                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                className="form-input"
                                 placeholder="Enter your email"
                                 value={formData.email}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -111,13 +111,13 @@ export default function RegisterPage() {
                         </div>
 
                         <div>
-                            <label htmlFor="role" className="block text-sm font-medium text-gray-700">
+                            <label htmlFor="role" className="form-label">
                                 Account Type
                             </label>
                             <select
                                 id="role"
                                 name="role"
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                className="form-input form-select"
                                 value={formData.role}
                                 onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                             >
@@ -128,7 +128,7 @@ export default function RegisterPage() {
 
                         {formData.role === 'Company' && (
                             <div>
-                                <label htmlFor="companyName" className="block text-sm font-medium text-gray-700">
+                                <label htmlFor="companyName" className="form-label">
                                     Company Name
                                 </label>
                                 <input
@@ -136,7 +136,7 @@ export default function RegisterPage() {
                                     name="companyName"
                                     type="text"
                                     required
-                                    className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                    className="form-input"
                                     placeholder="Enter your company name"
                                     value={formData.companyName}
                                     onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
@@ -145,7 +145,7 @@ export default function RegisterPage() {
                         )}
 
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                            <label htmlFor="password" className="form-label">
                                 Password
                             </label>
                             <input
@@ -153,18 +153,18 @@ export default function RegisterPage() {
                                 name="password"
                                 type="password"
                                 required
-                                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                className="form-input"
                                 placeholder="Create a strong password"
                                 value={formData.password}
                                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                             />
-                            <p className="mt-1 text-xs text-gray-500">
+                            <p className="form-help">
                                 Must be 8+ characters with uppercase, lowercase, and number
                             </p>
                         </div>
 
                         <div>
-                            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+                            <label htmlFor="confirmPassword" className="form-label">
                                 Confirm Password
                             </label>
                             <input
@@ -172,7 +172,7 @@ export default function RegisterPage() {
                                 name="confirmPassword"
                                 type="password"
                                 required
-                                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                className="form-input"
                                 placeholder="Confirm your password"
                                 value={formData.confirmPassword}
                                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
@@ -186,17 +186,17 @@ export default function RegisterPage() {
                             name="acceptTerms"
                             type="checkbox"
                             required
-                            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                            className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
                             checked={formData.acceptTerms}
                             onChange={(e) => setFormData({ ...formData, acceptTerms: e.target.checked })}
                         />
-                        <label htmlFor="acceptTerms" className="ml-2 block text-sm text-gray-900">
+                        <label htmlFor="acceptTerms" className="ml-2 block text-sm" style={{ color: 'var(--foreground)' }}>
                             I agree to the{' '}
-                            <Link href="/terms" className="text-indigo-600 hover:text-indigo-500">
+                            <Link href="/terms" className="text-red-600 hover:text-red-700">
                                 Terms of Service
                             </Link>{' '}
                             and{' '}
-                            <Link href="/privacy" className="text-indigo-600 hover:text-indigo-500">
+                            <Link href="/privacy" className="text-red-600 hover:text-red-700">
                                 Privacy Policy
                             </Link>
                         </label>
@@ -206,16 +206,16 @@ export default function RegisterPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                            className="btn-primary w-full disabled:opacity-50"
                         >
                             {loading ? 'Creating account...' : 'Create account'}
                         </button>
                     </div>
 
                     <div className="text-center">
-                        <span className="text-sm text-gray-600">
+                        <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
                             Already have an account?{' '}
-                            <Link href="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
+                            <Link href="/login" className="font-medium text-red-600 hover:text-red-700">
                                 Sign in
                             </Link>
                         </span>

@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ProgramCard from '@/components/ProgramCard';
 import CreateProgramModal from '@/components/CreateProgramModal';
+import EditProgramModal from '@/components/EditProgramModal';
 
 interface User {
   id: string;
@@ -29,9 +30,13 @@ interface Program {
     name: string;
     email: string;
   };
-  _count: {
+  _count?: {
     reports: number;
   };
+  githubRepo?: string;
+  githubIssues?: string[];
+  maintainerEmail?: string;
+  codeLanguages?: string[];
   createdAt: string;
 }
 
@@ -41,6 +46,9 @@ export default function ProgramsPage() {
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingProgram, setEditingProgram] = useState<Program | null>(null);
+  const [editLoading, setEditLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -106,6 +114,41 @@ export default function ProgramsPage() {
       alert('Failed to create program');
     } finally {
       setCreateLoading(false);
+    }
+  };
+
+  const handleEditProgram = (program: Program) => {
+    setEditingProgram(program);
+    setShowEditModal(true);
+  };
+
+  const handleUpdateProgram = async (programData: any) => {
+    if (!editingProgram) return;
+    
+    setEditLoading(true);
+    try {
+      const response = await fetch(`/api/programs/${editingProgram.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(programData),
+      });
+
+      if (response.ok) {
+        const updatedProgram = await response.json();
+        setPrograms(programs.map(p => p.id === editingProgram.id ? updatedProgram : p));
+        setShowEditModal(false);
+        setEditingProgram(null);
+      } else {
+        const error = await response.json();
+        alert(error.error || 'Failed to update program');
+      }
+    } catch (error) {
+      console.error('Failed to update program:', error);
+      alert('Failed to update program');
+    } finally {
+      setEditLoading(false);
     }
   };
 
@@ -202,6 +245,7 @@ export default function ProgramsPage() {
                   key={program.id}
                   program={program}
                   userRole={user.role}
+                  onEdit={handleEditProgram}
                   onDelete={handleDeleteProgram}
                   onViewDetails={handleViewDetails}
                 />
@@ -217,6 +261,19 @@ export default function ProgramsPage() {
         onSubmit={handleCreateProgram}
         loading={createLoading}
       />
+
+      {editingProgram && (
+        <EditProgramModal
+          isOpen={showEditModal}
+          onClose={() => {
+            setShowEditModal(false);
+            setEditingProgram(null);
+          }}
+          onSubmit={handleUpdateProgram}
+          program={editingProgram}
+          loading={editLoading}
+        />
+      )}
     </div>
   );
 }
