@@ -1,7 +1,6 @@
-// src/app/api/notifications/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 import { AuthService } from '@/lib/auth';
-import { NotificationService } from '@/lib/notifications';
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,12 +14,25 @@ export async function GET(request: NextRequest) {
     if (!decoded) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
+    const userId = decoded.userId;
 
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '10');
 
-    const notifications = await NotificationService.getUserNotifications(decoded.userId, limit);
-    const unreadCount = await NotificationService.getUnreadCount(decoded.userId);
+    // Get notifications for the user
+    const notifications = await prisma.notification.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    });
+
+    // Get unread count
+    const unreadCount = await prisma.notification.count({
+      where: { 
+        userId,
+        read: false 
+      },
+    });
 
     return NextResponse.json({
       notifications,
@@ -45,19 +57,38 @@ export async function PATCH(request: NextRequest) {
     if (!decoded) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
+    const userId = decoded.userId;
 
     const body = await request.json();
     const { notificationId, markAllAsRead } = body;
 
     if (markAllAsRead) {
-      await NotificationService.markAllAsRead(decoded.userId);
-      return NextResponse.json({ message: 'All notifications marked as read' });
-    } else if (notificationId) {
-      await NotificationService.markAsRead(notificationId, decoded.userId);
-      return NextResponse.json({ message: 'Notification marked as read' });
-    } else {
-      return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+      // Mark all notifications as read for the user
+      await prisma.notification.updateMany({
+        where: { 
+          userId,
+          read: false 
+        },
+        data: { read: true },
+      });
+
+      return NextResponse.json({ success: true });
     }
+
+    if (notificationId) {
+      // Mark specific notification as read
+      await prisma.notification.update({
+        where: { 
+          id: notificationId,
+          userId, // Ensure user can only update their own notifications
+        },
+        data: { read: true },
+      });
+
+      return NextResponse.json({ success: true });
+    }
+
+    return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
 
   } catch (error) {
     console.error('Update notification error:', error);

@@ -16,5 +16,6 @@ SMTP_PASS="your-app-password"
 BCRYPT_ROUNDS="12"
 SESSION_TIMEOUT="24h"
 REFRESH_TOKEN_TIMEOUT="7d"
-ds
 
+
+ 

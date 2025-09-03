@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { AuthService } from '@/lib/auth';
 import { z } from 'zod';
 
 const syncSchema = z.object({
@@ -14,10 +13,17 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    // Get user from token
+    const token = request.cookies.get('accessToken')?.value;
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const decoded = await AuthService.verifyAccessToken(token);
+    if (!decoded) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
+    const userId = decoded.userId;
 
     const programId = params.id;
     const body = await request.json();
@@ -27,7 +33,7 @@ export async function POST(
     const program = await prisma.program.findFirst({
       where: {
         id: programId,
-        companyId: session.user.id,
+        companyId: userId,
       },
     });
 
@@ -109,10 +115,17 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    // Get user from token
+    const token = request.cookies.get('accessToken')?.value;
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const decoded = await AuthService.verifyAccessToken(token);
+    if (!decoded) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
+    const userId = decoded.userId;
 
     const programId = params.id;
 
@@ -120,7 +133,7 @@ export async function GET(
     const program = await prisma.program.findFirst({
       where: {
         id: programId,
-        companyId: session.user.id,
+        companyId: userId,
       },
       select: {
         id: true,
