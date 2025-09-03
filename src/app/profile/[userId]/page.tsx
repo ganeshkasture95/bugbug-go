@@ -44,16 +44,27 @@ interface CurrentUser {
   role: string;
 }
 
-export default function PublicProfilePage({ params }: { params: { userId: string } }) {
+export default function PublicProfilePage({ params }: { params: Promise<{ userId: string }> }) {
   const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<string>('');
   const router = useRouter();
 
   useEffect(() => {
-    fetchCurrentUser();
-    fetchPublicProfile();
-  }, [params.userId]);
+    const initializeParams = async () => {
+      const resolvedParams = await params;
+      setUserId(resolvedParams.userId);
+    };
+    initializeParams();
+  }, [params]);
+
+  useEffect(() => {
+    if (userId) {
+      fetchCurrentUser();
+      fetchPublicProfile();
+    }
+  }, [userId]);
 
   const fetchCurrentUser = async () => {
     try {
@@ -72,7 +83,7 @@ export default function PublicProfilePage({ params }: { params: { userId: string
 
   const fetchPublicProfile = async () => {
     try {
-      const response = await fetch(`/api/user/public/${params.userId}`);
+      const response = await fetch(`/api/user/public/${userId}`);
       if (response.ok) {
         const profileData = await response.json();
         setProfile(profileData);

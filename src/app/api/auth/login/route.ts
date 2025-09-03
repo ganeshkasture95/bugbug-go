@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     if (!isValidPassword) {
       // Increment login attempts
       const newAttempts = user.loginAttempts + 1;
-      const updateData: any = { loginAttempts: newAttempts };
+      const updateData: { loginAttempts: number; lockedUntil?: Date } = { loginAttempts: newAttempts };
 
       if (newAttempts >= MAX_LOGIN_ATTEMPTS) {
         updateData.lockedUntil = new Date(Date.now() + LOCKOUT_DURATION);

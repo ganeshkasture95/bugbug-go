@@ -48,7 +48,7 @@ interface Program {
   createdAt: string;
 }
 
-export default function ProgramDetailPage({ params }: { params: { id: string } }) {
+export default function ProgramDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const [user, setUser] = useState<User | null>(null);
   const [program, setProgram] = useState<Program | null>(null);
   const [loading, setLoading] = useState(true);
@@ -56,20 +56,29 @@ export default function ProgramDetailPage({ params }: { params: { id: string } }
   const [enrollmentLoading, setEnrollmentLoading] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportLoading, setReportLoading] = useState(false);
+  const [programId, setProgramId] = useState<string>('');
   const router = useRouter();
+
+  useEffect(() => {
+    const initializeParams = async () => {
+      const resolvedParams = await params;
+      setProgramId(resolvedParams.id);
+    };
+    initializeParams();
+  }, [params]);
 
   useEffect(() => {
     fetchUserData();
   }, []);
 
   useEffect(() => {
-    if (user) {
+    if (user && programId) {
       fetchProgram();
       if (user.role === 'Researcher') {
         checkEnrollmentStatus();
       }
     }
-  }, [params.id, user]);
+  }, [programId, user]);
 
   const fetchUserData = async () => {
     try {
@@ -88,7 +97,7 @@ export default function ProgramDetailPage({ params }: { params: { id: string } }
 
   const fetchProgram = async () => {
     try {
-      const response = await fetch(`/api/programs/${params.id}`);
+      const response = await fetch(`/api/programs/${programId}`);
       if (response.ok) {
         const programData = await response.json();
         setProgram(programData);
@@ -104,7 +113,7 @@ export default function ProgramDetailPage({ params }: { params: { id: string } }
 
   const checkEnrollmentStatus = async () => {
     try {
-      const response = await fetch(`/api/programs/${params.id}/enroll`);
+      const response = await fetch(`/api/programs/${programId}/enroll`);
       if (response.ok) {
         const data = await response.json();
         setEnrolled(data.enrolled);
@@ -118,7 +127,7 @@ export default function ProgramDetailPage({ params }: { params: { id: string } }
     setEnrollmentLoading(true);
     try {
       const method = enrolled ? 'DELETE' : 'POST';
-      const response = await fetch(`/api/programs/${params.id}/enroll`, {
+      const response = await fetch(`/api/programs/${programId}/enroll`, {
         method,
       });
 

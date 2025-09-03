@@ -10,7 +10,7 @@ const syncSchema = z.object({
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Get user from token
@@ -25,7 +25,7 @@ export async function POST(
     }
     const userId = decoded.userId;
 
-    const programId = params.id;
+    const { id: programId } = await params;
     const body = await request.json();
     const validatedData = syncSchema.parse(body);
 
@@ -81,10 +81,10 @@ export async function POST(
         const issues = await response.json();
         
         // Filter out pull requests (GitHub API includes PRs in issues endpoint)
-        const actualIssues = issues.filter((issue: any) => !issue.pull_request);
+        const actualIssues = issues.filter((issue: { pull_request?: unknown }) => !issue.pull_request);
         
         // Extract issue URLs
-        const issueUrls = actualIssues.map((issue: any) => issue.html_url);
+        const issueUrls = actualIssues.map((issue: { html_url: string }) => issue.html_url);
 
         return NextResponse.json({
           success: true,
@@ -112,7 +112,7 @@ export async function POST(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Get user from token
@@ -127,7 +127,7 @@ export async function GET(
     }
     const userId = decoded.userId;
 
-    const programId = params.id;
+    const { id: programId } = await params;
 
     // Get program with GitHub info
     const program = await prisma.program.findFirst({
@@ -177,7 +177,7 @@ export async function GET(
       ]);
 
       // Filter out pull requests
-      const actualIssues = issuesData.filter((issue: any) => !issue.pull_request);
+      const actualIssues = issuesData.filter((issue: { pull_request?: unknown }) => !issue.pull_request);
 
       return NextResponse.json({
         success: true,

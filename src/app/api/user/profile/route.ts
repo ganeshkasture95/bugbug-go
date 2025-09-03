@@ -108,20 +108,20 @@ export async function GET(request: NextRequest) {
     // Calculate statistics
     const stats = {
       totalReports: user.reports.length,
-      validatedReports: user.reports.filter((r: any) => r.status === 'Validated').length,
-      totalEarnings: user.rewards.reduce((sum: number, reward: any) => sum + reward.amount, 0),
+      validatedReports: user.reports.filter((r) => r.status === 'Validated').length,
+      totalEarnings: user.rewards.reduce((sum: number, reward) => sum + reward.amount, 0),
       averageResponseTime: '2.5 days', // This would be calculated from actual data
       rank: calculateUserRank(user.xp), // Helper function to calculate rank
     };
 
     // Calculate severity breakdown for researcher
-    const severityBreakdown = user.reports.reduce((acc: Record<string, number>, report: any) => {
+    const severityBreakdown = user.reports.reduce((acc: Record<string, number>, report) => {
       acc[report.severity] = (acc[report.severity] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 
     // Calculate program statistics for company
-    const programStats = user.programs.reduce((acc: Record<string, number>, program: any) => {
+    const programStats = user.programs.reduce((acc: Record<string, number>, program) => {
       acc.totalPrograms = (acc.totalPrograms || 0) + 1;
       acc.totalReports = (acc.totalReports || 0) + program.reports.length;
       acc.totalResearchers = (acc.totalResearchers || 0) + program.enrollments.length;

@@ -60,6 +60,7 @@ export async function PATCH(
             email: true,
           },
         },
+        reward: true,
       },
     });
 
