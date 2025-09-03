@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { AuthService } from '@/lib/auth';
+import { NotificationService } from '@/lib/notifications';
 
 export async function POST(
   request: NextRequest,
@@ -78,6 +79,18 @@ export async function POST(
         },
       },
     });
+
+    // Notify the company about the new enrollment
+    try {
+      await NotificationService.notifyCompanyOfEnrollment(
+        id,
+        user.name,
+        user.email
+      );
+    } catch (error) {
+      console.error('Failed to notify company of enrollment:', error);
+      // Don't fail the enrollment if notification fails
+    }
 
     return NextResponse.json({
       message: 'Successfully enrolled in program',

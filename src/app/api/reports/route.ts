@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { AuthService } from '@/lib/auth';
+import { NotificationService } from '@/lib/notifications';
 
 export async function POST(request: NextRequest) {
   try {
@@ -87,6 +88,7 @@ export async function POST(request: NextRequest) {
             title: true,
             company: {
               select: {
+                id: true,
                 name: true,
                 email: true,
               },
@@ -95,6 +97,19 @@ export async function POST(request: NextRequest) {
         },
       },
     });
+
+    // Notify the company about the new report
+    try {
+      const message = `New ${severity.toLowerCase()} severity report "${title}" submitted by ${user.name} for program "${report.program.title}"`;
+      await NotificationService.createNotification(
+        report.program.company.id,
+        message,
+        'ReportUpdate'
+      );
+    } catch (error) {
+      console.error('Failed to notify company of new report:', error);
+      // Don't fail the report submission if notification fails
+    }
 
     return NextResponse.json(report, { status: 201 });
 

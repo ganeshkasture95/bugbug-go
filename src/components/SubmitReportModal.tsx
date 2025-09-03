@@ -112,13 +112,13 @@ export default function SubmitReportModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 modal-overlay flex items-center justify-center p-4 z-50">
-      <div className="modal-content max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h2 className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>Submit Security Report</h2>
-              <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
+              <h2 className="text-2xl font-bold text-gray-900">Submit Security Report</h2>
+              <p className="text-sm text-gray-600">
                 Program: {programTitle}
               </p>
             </div>
@@ -135,29 +135,29 @@ export default function SubmitReportModal({
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Title */}
             <div>
-              <label className="form-label">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Report Title *
               </label>
               <input
                 type="text"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="form-input"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 placeholder="e.g., SQL Injection in User Login Form"
               />
-              {errors.title && <p className="form-error">{errors.title}</p>}
+              {errors.title && <p className="text-red-600 text-sm mt-1">{errors.title}</p>}
             </div>
 
             {/* Severity and Vulnerability Type */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="form-label">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Severity *
                 </label>
                 <select
                   value={formData.severity}
                   onChange={(e) => setFormData({ ...formData, severity: e.target.value })}
-                  className="form-input form-select"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 >
                   {severityLevels.map((level) => (
                     <option key={level.value} value={level.value}>
@@ -168,13 +168,13 @@ export default function SubmitReportModal({
               </div>
 
               <div>
-                <label className="form-label">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Vulnerability Type
                 </label>
                 <select
                   value={formData.vulnerabilityType}
                   onChange={(e) => setFormData({ ...formData, vulnerabilityType: e.target.value })}
-                  className="form-input form-select"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 >
                   {vulnerabilityTypes.map((type) => (
                     <option key={type} value={type}>
@@ -187,71 +187,71 @@ export default function SubmitReportModal({
 
             {/* Description */}
             <div>
-              <label className="form-label">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Vulnerability Description *
               </label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 rows={4}
-                className="form-input form-textarea"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 placeholder="Provide a detailed description of the vulnerability, including what it affects and how it works..."
               />
-              <p className="form-help">
+              <p className="text-sm text-gray-500 mt-1">
                 Minimum 50 characters. Be specific and technical.
               </p>
-              {errors.description && <p className="form-error">{errors.description}</p>}
+              {errors.description && <p className="text-red-600 text-sm mt-1">{errors.description}</p>}
             </div>
 
             {/* Steps to Reproduce */}
             <div>
-              <label className="form-label">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Steps to Reproduce *
               </label>
               <textarea
                 value={formData.stepsToReproduce}
                 onChange={(e) => setFormData({ ...formData, stepsToReproduce: e.target.value })}
                 rows={6}
-                className="form-input form-textarea"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 placeholder="1. Navigate to the login page&#10;2. Enter the following payload in the username field: ' OR 1=1--&#10;3. Click submit&#10;4. Observe that authentication is bypassed"
               />
-              <p className="form-help">
+              <p className="text-sm text-gray-500 mt-1">
                 Provide clear, numbered steps that allow the security team to reproduce the issue.
               </p>
-              {errors.stepsToReproduce && <p className="form-error">{errors.stepsToReproduce}</p>}
+              {errors.stepsToReproduce && <p className="text-red-600 text-sm mt-1">{errors.stepsToReproduce}</p>}
             </div>
 
             {/* Impact */}
             <div>
-              <label className="form-label">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Impact *
               </label>
               <textarea
                 value={formData.impact}
                 onChange={(e) => setFormData({ ...formData, impact: e.target.value })}
                 rows={3}
-                className="form-input form-textarea"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 placeholder="Describe the potential impact of this vulnerability on the application and its users..."
               />
-              <p className="form-help">
+              <p className="text-sm text-gray-500 mt-1">
                 Explain what an attacker could achieve by exploiting this vulnerability.
               </p>
-              {errors.impact && <p className="form-error">{errors.impact}</p>}
+              {errors.impact && <p className="text-red-600 text-sm mt-1">{errors.impact}</p>}
             </div>
 
             {/* Proof of Concept */}
             <div>
-              <label className="form-label">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Proof of Concept (Optional)
               </label>
               <textarea
                 value={formData.proofOfConcept}
                 onChange={(e) => setFormData({ ...formData, proofOfConcept: e.target.value })}
                 rows={4}
-                className="form-input form-textarea"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 placeholder="Include any code, screenshots, or additional evidence that demonstrates the vulnerability..."
               />
-              <p className="form-help">
+              <p className="text-sm text-gray-500 mt-1">
                 Provide any additional evidence, code snippets, or screenshots that support your findings.
               </p>
             </div>
@@ -268,18 +268,18 @@ export default function SubmitReportModal({
             </div>
 
             {/* Submit Buttons */}
-            <div className="flex justify-end space-x-4 pt-6 border-t" style={{ borderColor: 'var(--border)' }}>
+            <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
               <button
                 type="button"
                 onClick={handleClose}
-                className="btn-secondary"
+                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="btn-primary disabled:opacity-50"
+                className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
               >
                 {loading ? 'Submitting...' : 'Submit Report'}
               </button>

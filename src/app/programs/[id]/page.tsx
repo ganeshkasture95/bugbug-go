@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import GitHubIssueCard from '@/components/GitHubIssueCard';
 import SubmitReportModal from '@/components/SubmitReportModal';
 import DashboardNav from '@/components/DashboardNav';
+import EnrolledResearchers from '@/components/EnrolledResearchers';
 
 interface User {
   id: string;
@@ -462,6 +463,12 @@ export default function ProgramDetailPage({ params }: { params: { id: string } }
                 </div>
               )}
             </div>
+
+            {/* Enrolled Researchers - Only visible to company owners */}
+            <EnrolledResearchers 
+              programId={program.id} 
+              isCompanyOwner={user.role === 'Company'} 
+            />
           </div>
 
           {/* Sidebar */}

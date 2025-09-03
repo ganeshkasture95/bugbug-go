@@ -3,6 +3,7 @@
 
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
+import NotificationDropdown from './NotificationDropdown';
 
 interface User {
     id: string;
@@ -82,6 +83,9 @@ export default function DashboardNav({ user, onLogout }: DashboardNavProps) {
 
                 {/* User Menu */}
                 <div className="flex items-center space-x-4">
+                    {/* Notifications */}
+                    <NotificationDropdown userId={user.id} />
+                    
                     <div className="hidden sm:flex items-center space-x-3">
                         <div className="w-8 h-8 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center">
                             <span className="text-white text-sm font-bold">

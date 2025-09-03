@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import DashboardNav from '@/components/DashboardNav';
+import ReportManagement from '@/components/ReportManagement';
 
 interface User {
     id: string;
@@ -230,6 +231,13 @@ export default function DashboardPage() {
                         </div>
                     </div>
                 </div>
+
+                {/* Report Management for Companies */}
+                {user.role === 'Company' && (
+                    <div className="mb-8">
+                        <ReportManagement isCompany={user.role === 'Company'} />
+                    </div>
+                )}
 
                 {/* Action Cards Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

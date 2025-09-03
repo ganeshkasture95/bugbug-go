@@ -15,6 +15,11 @@ model User {
   email           String    @unique
   password        String
   role            Role
+  bio             String?   // User biography
+  website         String?   // Personal website
+  twitter         String?   // Twitter username
+  linkedin        String?   // LinkedIn username
+  github          String?   // GitHub username
   twoFactorEnabled Boolean  @default(false)
   twoFactorSecret String?   // 2FA secret key
   emailVerified   Boolean   @default(false)
@@ -142,6 +147,8 @@ model Reward {
   reportId    String   @unique
   researcher  User     @relation(fields: [researcherId], references: [id])
   researcherId String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 enum RewardStatus {
