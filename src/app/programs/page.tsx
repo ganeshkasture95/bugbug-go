@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import ProgramCard from '@/components/ProgramCard';
 import CreateProgramModal from '@/components/CreateProgramModal';
 import EditProgramModal from '@/components/EditProgramModal';
+import DashboardNav from '@/components/DashboardNav';
 
 interface User {
   id: string;
@@ -124,7 +125,7 @@ export default function ProgramsPage() {
 
   const handleUpdateProgram = async (programData: any) => {
     if (!editingProgram) return;
-    
+
     setEditLoading(true);
     try {
       const response = await fetch(`/api/programs/${editingProgram.id}`, {
@@ -177,6 +178,15 @@ export default function ProgramsPage() {
     router.push(`/programs/${programId}`);
   };
 
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      router.push('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -190,55 +200,98 @@ export default function ProgramsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <button
-                onClick={() => router.push('/dashboard')}
-                className="text-indigo-600 hover:text-indigo-800 mr-4"
-              >
-                ← Back to Dashboard
-              </button>
-              <h1 className="text-xl font-semibold">
-                {user.role === 'Company' ? 'My Programs' : 'Bug Bounty Programs'}
-              </h1>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-red-50 to-slate-50">
+      <DashboardNav user={user} onLogout={handleLogout} />
+
+      <main className="max-w-7xl mx-auto px-6 py-8">
+        {/* Header Section */}
+        <div className="mb-8 flex justify-between items-start">
+          <div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+              {user.role === 'Company'
+                ? 'Manage Your Security Programs'
+                : 'Discover Bug Bounty Opportunities'}
+            </h2>
+            <p className="text-gray-600">
+              {user.role === 'Company'
+                ? 'Create and manage bug bounty programs to secure your applications.'
+                : 'Find active programs, hunt for vulnerabilities, and earn rewards.'}
+            </p>
+          </div>
+          {user.role === 'Company' && (
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center"
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Create Program
+            </button>
+          )}
+        </div>
+
+        {/* Programs Grid */}
+        {programs.length === 0 ? (
+          <div className="text-center py-16">
+            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h3M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
             </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">
+              {user.role === 'Company'
+                ? 'No programs created yet'
+                : 'No active programs available'}
+            </h3>
+            <p className="text-gray-600 mb-6 max-w-md mx-auto">
+              {user.role === 'Company'
+                ? 'Get started by creating your first bug bounty program to connect with security researchers.'
+                : 'Check back later for new bug bounty programs or contact companies directly.'}
+            </p>
             {user.role === 'Company' && (
-              <div className="flex items-center">
-                <button
-                  onClick={() => setShowCreateModal(true)}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium"
-                >
-                  Create Program
-                </button>
-              </div>
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors inline-flex items-center"
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                Create Your First Program
+              </button>
             )}
           </div>
-        </div>
-      </nav>
-
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          {programs.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="text-gray-500 text-lg mb-4">
-                {user.role === 'Company' 
-                  ? 'No programs created yet' 
-                  : 'No active programs available'
-                }
+        ) : (
+          <>
+            {/* Stats Bar */}
+            <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-200 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-gray-900">{programs.length}</div>
+                  <div className="text-sm text-gray-600">Total Programs</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">
+                    {programs.filter(p => p.status === 'Active').length}
+                  </div>
+                  <div className="text-sm text-gray-600">Active Programs</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {programs.reduce((sum, p) => sum + (p._count?.reports || 0), 0)}
+                  </div>
+                  <div className="text-sm text-gray-600">Total Reports</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-red-600">
+                    ${programs.reduce((sum, p) => sum + p.rewards.critical + p.rewards.high + p.rewards.medium + p.rewards.low, 0).toLocaleString()}
+                  </div>
+                  <div className="text-sm text-gray-600">Total Rewards</div>
+                </div>
               </div>
-              {user.role === 'Company' && (
-                <button
-                  onClick={() => setShowCreateModal(true)}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-md font-medium"
-                >
-                  Create Your First Program
-                </button>
-              )}
             </div>
-          ) : (
+
+            {/* Programs Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {programs.map((program) => (
                 <ProgramCard
@@ -251,8 +304,8 @@ export default function ProgramsPage() {
                 />
               ))}
             </div>
-          )}
-        </div>
+          </>
+        )}
       </main>
 
       <CreateProgramModal

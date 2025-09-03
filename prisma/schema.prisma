@@ -28,6 +28,7 @@ model User {
   badges          Badge[]   // relation
   reports         Report[]  // researcher submissions
   programs        Program[] // company programs
+  enrollments     Enrollment[] // program enrollments
   rewards         Reward[]  // payouts
   notifications   Notification[] // user notifications
   sessions        Session[] // user sessions
@@ -52,6 +53,7 @@ model Program {
   company     User     @relation(fields: [companyId], references: [id])
   companyId   String
   reports     Report[]
+  enrollments Enrollment[]
   // GitHub Integration
   githubRepo  String?  // GitHub repository URL (e.g., "owner/repo")
   githubIssues String[] // Array of GitHub issue URLs or numbers
@@ -67,23 +69,39 @@ enum ProgramStatus {
   Closed
 }
 
+// Enrollment entity - tracks researcher enrollment in programs
+model Enrollment {
+  id         String   @id @default(uuid())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  program    Program  @relation(fields: [programId], references: [id])
+  programId  String
+  enrolledAt DateTime @default(now())
+  
+  @@unique([userId, programId])
+}
+
 // Report entity
 model Report {
-  id          String   @id @default(uuid())
-  title       String
-  description String
-  severity    Severity
-  status      ReportStatus @default(Submitted)
-  researcher  User     @relation(fields: [researcherId], references: [id])
-  researcherId String
-  program     Program  @relation(fields: [programId], references: [id])
-  programId   String
-  aiAnalysis  AIAnalysis?
-  reward      Reward?
-  disclosure  Disclosure?
-  attachments String[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                String   @id @default(uuid())
+  title             String
+  description       String
+  severity          Severity
+  vulnerabilityType String   @default("Other")
+  stepsToReproduce  String
+  impact            String
+  proofOfConcept    String?
+  status            ReportStatus @default(Submitted)
+  researcher        User     @relation(fields: [researcherId], references: [id])
+  researcherId      String
+  program           Program  @relation(fields: [programId], references: [id])
+  programId         String
+  aiAnalysis        AIAnalysis?
+  reward            Reward?
+  disclosure        Disclosure?
+  attachments       String[]
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }
 
 enum Severity {
