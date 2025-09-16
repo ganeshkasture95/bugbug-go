@@ -1,7 +1,7 @@
 // src/app/api/user/profile/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
 import { AuthService } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
@@ -137,6 +137,10 @@ export async function GET(request: NextRequest) {
       stats,
       severityBreakdown,
       programStats,
+    }, {
+      headers: {
+        'Cache-Control': 'private, max-age=300'
+      }
     });
 
   } catch (error) {

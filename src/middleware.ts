@@ -33,8 +33,6 @@ const researcherRoutes = [
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
-  console.log('Middleware running for:', pathname);
-  
   // Skip middleware for public routes and static files
   if (
     pathname.startsWith('/_next') ||
@@ -45,10 +43,8 @@ export async function middleware(request: NextRequest) {
     pathname === '/register' ||
     pathname === '/forgot-password' ||
     pathname === '/reset-password' ||
-    pathname.startsWith('/(auth)') ||
-    pathname === '/dashboard' // Temporarily allow dashboard access
+    pathname.startsWith('/(auth)')
   ) {
-    console.log('Skipping middleware for public route:', pathname);
     return NextResponse.next();
   }
 
@@ -60,10 +56,8 @@ export async function middleware(request: NextRequest) {
 
   if (isProtectedRoute || isAdminRoute || isCompanyRoute || isResearcherRoute) {
     const token = request.cookies.get('accessToken')?.value;
-    console.log('Checking protected route:', pathname, 'Token exists:', !!token);
 
     if (!token) {
-      console.log('No token found, redirecting to login');
       // Redirect to login for web pages, return 401 for API routes
       if (pathname.startsWith('/api/')) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -72,12 +66,9 @@ export async function middleware(request: NextRequest) {
     }
 
     // Verify token
-    console.log('Verifying token...');
     const payload = await AuthService.verifyAccessToken(token);
-    console.log('Token verification result:', !!payload, payload?.userId);
     
     if (!payload) {
-      console.log('Token verification failed, redirecting to login');
       // Token is invalid, redirect to login
       const response = pathname.startsWith('/api/')
         ? NextResponse.json({ error: 'Invalid token' }, { status: 401 })
@@ -88,8 +79,6 @@ export async function middleware(request: NextRequest) {
       response.cookies.delete('refreshToken');
       return response;
     }
-    
-    console.log('Token verified successfully for user:', payload.userId);
 
     // Check role-based access
     if (isAdminRoute && payload.role !== 'Admin') {

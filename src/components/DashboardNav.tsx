@@ -1,9 +1,14 @@
 // src/components/DashboardNav.tsx
 'use client';
 
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { useRouter, usePathname } from 'next/navigation';
-import NotificationDropdown from './NotificationDropdown';
+import { usePathname, useRouter } from 'next/navigation';
+
+const NotificationDropdown = dynamic(() => import('./NotificationDropdown'), {
+  loading: () => <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>,
+  ssr: false
+});
 
 interface User {
     id: string;
