@@ -19,11 +19,12 @@ const updateProgramSchema = z.object({
 // GET - Fetch single program
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const program = await prisma.program.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         company: {
           select: { name: true, email: true }
@@ -61,9 +62,10 @@ export async function GET(
 // PUT - Update program (Company only, own programs)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const userId = request.headers.get('x-user-id');
     const userRole = request.headers.get('x-user-role');
 
@@ -73,7 +75,7 @@ export async function PUT(
 
     // Check if program belongs to the company
     const existingProgram = await prisma.program.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: { companyId: true }
     });
 
@@ -85,7 +87,7 @@ export async function PUT(
     const validatedData = updateProgramSchema.parse(body);
 
     const program = await prisma.program.update({
-      where: { id: params.id },
+      where: { id },
       data: validatedData,
       include: {
         company: {
@@ -115,9 +117,10 @@ export async function PUT(
 // DELETE - Delete program (Company only, own programs)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const userId = request.headers.get('x-user-id');
     const userRole = request.headers.get('x-user-role');
 
@@ -127,7 +130,7 @@ export async function DELETE(
 
     // Check if program belongs to the company
     const existingProgram = await prisma.program.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: { companyId: true }
     });
 
@@ -136,7 +139,7 @@ export async function DELETE(
     }
 
     await prisma.program.delete({
-      where: { id: params.id }
+      where: { id }
     });
 
     return NextResponse.json({ message: 'Program deleted successfully' });

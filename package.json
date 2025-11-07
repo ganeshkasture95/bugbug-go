@@ -4,14 +4,16 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
+    "dev": "next dev",
+    "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "next lint",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "postinstall": "prisma generate",
+    "vercel-build": "prisma generate && next build"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.1",
@@ -19,7 +21,6 @@
     "bcryptjs": "^2.4.3",
     "jose": "^5.10.0",
     "next": "15.5.2",
-    "next-auth": "^4.24.5",
     "nodemailer": "^6.9.8",
     "prisma": "^6.15.0",
     "qrcode": "^1.5.3",

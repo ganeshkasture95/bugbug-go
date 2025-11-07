@@ -1,6 +1,6 @@
 // src/app/api/programs/route.ts
-import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
 const createProgramSchema = z.object({
@@ -83,7 +83,11 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    return NextResponse.json(programs);
+    return NextResponse.json(programs, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300'
+      }
+    });
   } catch (error) {
     console.error('Programs fetch error:', error);
     return NextResponse.json(

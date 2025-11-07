@@ -61,7 +61,7 @@ export class AuthService {
             console.log('Verifying token with secret:', this.JWT_SECRET ? 'Secret exists' : 'No secret');
             const { payload } = await jwtVerify(token, this.JWT_SECRET);
             console.log('Token verification successful:', payload.userId);
-            return payload as JWTPayload;
+            return payload as unknown as JWTPayload;
         } catch (error) {
             console.log('Token verification failed:', error);
             return null;
@@ -72,7 +72,7 @@ export class AuthService {
     static async verifyRefreshToken(token: string): Promise<JWTPayload | null> {
         try {
             const { payload } = await jwtVerify(token, this.JWT_REFRESH_SECRET);
-            return payload as JWTPayload;
+            return payload as unknown as JWTPayload;
         } catch {
             return null;
         }

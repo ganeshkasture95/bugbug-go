@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
     // Handle Zod validation errors
     if (error && typeof error === 'object' && 'issues' in error) {
       const zodError = error as any;
-      const errorMessages = zodError.issues.map((issue: any) => ({
+      const errorMessages = zodError.issues.map((issue: { path: string[]; message: string }) => ({
         field: issue.path.join('.'),
         message: issue.message,
       }));

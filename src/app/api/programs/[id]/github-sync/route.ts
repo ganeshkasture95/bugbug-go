@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { AuthService } from '@/lib/auth';
 import { z } from 'zod';
 
 const syncSchema = z.object({
@@ -11,15 +10,22 @@ const syncSchema = z.object({
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    // Get user from token
+    const token = request.cookies.get('accessToken')?.value;
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const programId = params.id;
+    const decoded = await AuthService.verifyAccessToken(token);
+    if (!decoded) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
+    const userId = decoded.userId;
+
+    const { id: programId } = await params;
     const body = await request.json();
     const validatedData = syncSchema.parse(body);
 
@@ -27,7 +33,7 @@ export async function POST(
     const program = await prisma.program.findFirst({
       where: {
         id: programId,
-        companyId: session.user.id,
+        companyId: userId,
       },
     });
 
@@ -75,10 +81,10 @@ export async function POST(
         const issues = await response.json();
         
         // Filter out pull requests (GitHub API includes PRs in issues endpoint)
-        const actualIssues = issues.filter((issue: any) => !issue.pull_request);
+        const actualIssues = issues.filter((issue: { pull_request?: unknown }) => !issue.pull_request);
         
         // Extract issue URLs
-        const issueUrls = actualIssues.map((issue: any) => issue.html_url);
+        const issueUrls = actualIssues.map((issue: { html_url: string }) => issue.html_url);
 
         return NextResponse.json({
           success: true,
@@ -106,21 +112,28 @@ export async function POST(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    // Get user from token
+    const token = request.cookies.get('accessToken')?.value;
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const programId = params.id;
+    const decoded = await AuthService.verifyAccessToken(token);
+    if (!decoded) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
+    const userId = decoded.userId;
+
+    const { id: programId } = await params;
 
     // Get program with GitHub info
     const program = await prisma.program.findFirst({
       where: {
         id: programId,
-        companyId: session.user.id,
+        companyId: userId,
       },
       select: {
         id: true,
@@ -164,7 +177,7 @@ export async function GET(
       ]);
 
       // Filter out pull requests
-      const actualIssues = issuesData.filter((issue: any) => !issue.pull_request);
+      const actualIssues = issuesData.filter((issue: { pull_request?: unknown }) => !issue.pull_request);
 
       return NextResponse.json({
         success: true,
